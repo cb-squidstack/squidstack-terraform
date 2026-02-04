@@ -1,0 +1,7 @@
+gcp_project     = "your-gcp-project-id"
+gcp_region      = "us-central1"
+dns_zone_name   = "guru-rep-zone"
+dns_name        = "squid-demo-3.guru-rep.sa-demo.beescloud.com."
+dns_record_type = "A"
+dns_records     = ["34.123.45.67"]
+dns_ttl         = 300
