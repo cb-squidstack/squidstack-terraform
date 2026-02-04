@@ -57,6 +57,31 @@ variable "dns_ttl" {
   default     = 300
 }
 
+# Optional compute instance variables (for cost demo)
+variable "create_instance" {
+  description = "Whether to create a compute instance (for Infracost demo)"
+  type        = bool
+  default     = false
+}
+
+variable "instance_name" {
+  description = "Name of the compute instance"
+  type        = string
+  default     = "dns-demo-app"
+}
+
+variable "instance_type" {
+  description = "Machine type (e.g., n1-standard-1, n1-standard-4)"
+  type        = string
+  default     = "n1-standard-1"
+}
+
+variable "disk_size_gb" {
+  description = "Boot disk size in GB"
+  type        = number
+  default     = 20
+}
+
 # Get the DNS zone
 data "google_dns_managed_zone" "zone" {
   name = var.dns_zone_name
@@ -69,6 +94,35 @@ resource "google_dns_record_set" "app" {
   type         = var.dns_record_type
   ttl          = var.dns_ttl
   rrdatas      = var.dns_records
+}
+
+# Optional compute instance (for cost demonstration)
+resource "google_compute_instance" "demo_app" {
+  count        = var.create_instance ? 1 : 0
+  name         = var.instance_name
+  machine_type = var.instance_type
+  zone         = "${var.gcp_region}-a"
+
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+      size  = var.disk_size_gb
+    }
+  }
+
+  network_interface {
+    network = "default"
+    access_config {
+      # Ephemeral external IP
+    }
+  }
+
+  tags = ["http-server", "https-server"]
+
+  metadata = {
+    managed-by = "terraform"
+    purpose    = "infracost-demo"
+  }
 }
 
 output "dns_record_name" {
@@ -84,4 +138,19 @@ output "dns_record_type" {
 output "dns_records" {
   value       = google_dns_record_set.app.rrdatas
   description = "The DNS record values"
+}
+
+output "instance_created" {
+  value       = var.create_instance
+  description = "Whether a compute instance was created"
+}
+
+output "instance_name" {
+  value       = var.create_instance ? google_compute_instance.demo_app[0].name : null
+  description = "The compute instance name (if created)"
+}
+
+output "instance_ip" {
+  value       = var.create_instance ? google_compute_instance.demo_app[0].network_interface[0].access_config[0].nat_ip : null
+  description = "The compute instance external IP (if created)"
 }
