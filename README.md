@@ -4,24 +4,40 @@ Terraform infrastructure management for CloudBees Squidstack demo application.
 
 ## Purpose
 
-This repository demonstrates CloudBees Unify orchestrating Terraform to manage infrastructure changes (specifically DNS records) without requiring direct infrastructure access. Terraform executes on a bastion host with existing GCP credentials and network connectivity.
+This repository demonstrates CloudBees Unify orchestrating Terraform with comprehensive governance controls:
+- **Git as Source of Truth**: Code checked out from version control
+- **Security Scanning**: Checkov blocks insecure infrastructure
+- **Policy Enforcement**: OPA validates compliance rules
+- **Cost Governance**: Infracost prevents budget overruns
+- **Full Audit Trail**: Complete evidence for compliance
+
+Terraform executes on a bastion host with existing GCP credentials and network connectivity.
 
 ## Architecture
 
-- **CloudBees Unify**: Workflow orchestration, approval gates, audit trail
-- **Bastion Host**: Terraform execution environment with GCP/DNS access
+- **Git Repository**: Single source of truth for infrastructure code
+- **CloudBees Unify**: Workflow orchestration, security checks, approval gates, audit trail
+- **Bastion Host**: Terraform execution environment with GCP credentials
 - **SSH**: Communication channel between Unify and bastion
-- **GCP Cloud DNS**: Target infrastructure being managed
+- **GCP**: Target infrastructure being managed
 
 ## Repository Structure
 
 ```
 .
-└── dns/
-    ├── main.tf                    # Terraform configuration for DNS records
-    ├── terraform.tfvars.example   # Example variables file
-    └── .gitignore                 # Terraform-specific gitignore
+├── dns/              # DNS record management
+│   ├── main.tf
+│   ├── terraform.tfvars.example
+│   └── .gitignore
+├── compute/          # Compute instances (future)
+│   └── README.md
+├── networking/       # VPC, subnets, firewalls (future)
+│   └── README.md
+└── policies/         # Shared OPA policies for all resources
+    └── terraform.rego
 ```
+
+This structure supports multiple resource types while sharing common governance policies.
 
 ## DNS Module
 
@@ -80,15 +96,26 @@ The `dns/` directory contains Terraform configuration for managing GCP Cloud DNS
 
 ## CloudBees Unify Integration
 
-This Terraform configuration is designed to be orchestrated by CloudBees Unify workflows via SSH to a bastion host.
+This Terraform configuration is designed to be orchestrated by CloudBees Unify workflows with comprehensive governance.
 
-Typical workflow:
-1. **Plan Stage**: Unify triggers `terraform plan` on bastion, captures plan output
-2. **Approval Gate**: Human review of infrastructure changes
-3. **Apply Stage**: Unify triggers `terraform apply` on bastion
-4. **Verification**: DNS record verification via `dig`
+**CI/CD Pipeline Flow:**
+1. **Git Checkout**: Unify checks out code from this repository
+2. **Security Scan**: Checkov analyzes Terraform code for security issues (blocks on CRITICAL/HIGH)
+3. **Cost Check**: Infracost estimates monthly costs (blocks if over budget)
+4. **Deploy to Bastion**: Code copied to bastion host via SSH
+5. **Terraform Plan**: Execute `terraform plan` on bastion (has GCP credentials)
+6. **Policy Check**: OPA validates plan against governance policies (DNS rules, naming conventions)
+7. **Approval Gate**: Human review of infrastructure changes (optional)
+8. **Terraform Apply**: Execute `terraform apply` on bastion
+9. **Evidence Publishing**: Full audit trail published to CloudBees
 
-See the main demo repository for complete Unify workflow definitions.
+**Governance Controls:**
+- ✅ Checkov: Blocks insecure infrastructure configurations
+- ✅ OPA: Enforces organizational policies (e.g., DNS TTL >= 300s, FQDN requirements)
+- ✅ Infracost: Prevents cost overruns (configurable budget threshold)
+- ✅ Evidence: Complete audit trail for compliance
+
+See the `utils` repository for complete Unify workflow definitions.
 
 ## Security Model
 
