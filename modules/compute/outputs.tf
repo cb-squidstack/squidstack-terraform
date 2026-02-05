@@ -1,5 +1,5 @@
 output "instance_created" {
-  value       = var.create_instance
+  value       = length(google_compute_instance.app) > 0
   description = "Whether a compute instance was created"
 }
 
