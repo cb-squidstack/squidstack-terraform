@@ -5,10 +5,9 @@
 .terraform/
 .terraform.lock.hcl
 
-# Terraform variables - ignore all except environment-specific files
+# Terraform variables - ignore all except environment configs
 *.tfvars
-!dev.tfvars
-!prod.tfvars
+!environments/*.tfvars
 !*.tfvars.example
 
 # Crash log files
