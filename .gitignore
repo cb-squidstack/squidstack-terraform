@@ -2,10 +2,14 @@
 *.tfstate
 *.tfstate.*
 *.tfplan
-*.tfvars
-!terraform.tfvars.example
 .terraform/
 .terraform.lock.hcl
+
+# Terraform variables - ignore all except environment-specific files
+*.tfvars
+!dev.tfvars
+!prod.tfvars
+!*.tfvars.example
 
 # Crash log files
 crash.log
