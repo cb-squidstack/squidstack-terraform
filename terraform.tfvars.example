@@ -1,0 +1,19 @@
+# Example Terraform configuration
+# Copy to terraform.tfvars and update with actual values
+
+# GCP Configuration
+gcp_project = "your-gcp-project-id"
+gcp_region  = "us-central1"
+
+# DNS Configuration
+dns_zone_name   = "your-dns-zone-name"
+dns_name        = "app.example.com."
+dns_record_type = "A"
+dns_records     = ["34.123.45.67"]
+dns_ttl         = 300
+
+# Compute Configuration (optional - for Infracost cost demo)
+create_instance = false              # Set to true to enable cost demo ($101/month)
+instance_name   = "demo-app"
+instance_type   = "n1-standard-4"    # ~$140/month for cost demo
+disk_size_gb    = 100
